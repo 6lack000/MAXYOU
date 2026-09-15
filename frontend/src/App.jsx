@@ -81,7 +81,23 @@ const App = () => {
       ? assessment.readinessScore.overallScore
       : "Not available"
   }
+  
 </h3>
+
+{assessment.proveItQuestions &&
+  assessment.proveItQuestions.length > 0 && (
+    <div>
+      <h3>Prove-It Questions</h3>
+
+      {assessment.proveItQuestions.map((question, index) => (
+        <div key={index}>
+          <p>
+            Question {index + 1}: {question.question}
+          </p>
+        </div>
+      ))}
+    </div>
+)}
     </div>
 )}
         
