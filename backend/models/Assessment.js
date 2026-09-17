@@ -34,23 +34,26 @@ verificationResults: [
     limitations: Array
   }
 ],
-proveItQuestions: [
-  {
-    question: String,
-    reason: String,
-    relatedClaim: String,
-    relatedSkill: String,
+  proveItQuestions: [
+    {
+      question: String,
+      reason: String,
+      relatedClaim: String,
+      relatedSkill: String,
 
-    answer: String,
+      answer: {
+        type: String,
+        default: null
+      },
 
-    evaluation: {
-      score: Number,
-      confidence: Number,
-      strengths: Array,
-      weaknesses: Array,
-      explanation: String
+      evaluation: {
+        score: Number,
+        confidence: Number,
+        strengths: Array,
+        weaknesses: Array,
+        explanation: String
+      }
     }
-  }
 ],
 status: {
     type: String,

@@ -98,27 +98,16 @@ if (assessment.status === "claims_selected") {
 
     assessment.verificationResults = verificationResults
     assessment.proveItQuestions = proveItQuestions
-    assessment.status = "verification_completed"
-
-    const readinessScore = calculateReadinessScore(assessment)
-    assessment.readinessScore = readinessScore
-
-    console.time("generateReadinessReport")
-    const readinessReport = await generateReadinessReport(
-      assessment,
-      readinessScore
-    )
-    console.timeEnd("generateReadinessReport")
-
-    assessment.readinessReport = readinessReport
+    
+    assessment.status = "awaiting_answers"
 
     await assessment.save()
 
     return {
-      action: "prove_it",
-      verificationResults,
-      proveItQuestions
-    }
+        action: "prove_it",
+        verificationResults,
+        proveItQuestions
+        }
   }
 
   // ── GitHub path ──────────────────────────────────────────
@@ -276,20 +265,11 @@ if (assessment.status === "claims_selected") {
   console.log("VERIFICATION RESULTS:", verificationResults)
   assessment.verificationResults = verificationResults
   assessment.proveItQuestions = proveItQuestions
-  assessment.status = "verification_completed"
-
-  const readinessScore = calculateReadinessScore(assessment)
-  assessment.readinessScore = readinessScore
-
-  console.time("generateReadinessReport")
-  const readinessReport = await generateReadinessReport(
-    assessment,
-    readinessScore
-  )
-  console.timeEnd("generateReadinessReport")
-  assessment.readinessReport = readinessReport
+  assessment.status = "awaiting_answers"
 
   await assessment.save()
+
+
 
   return {
     action: "verify_claims",

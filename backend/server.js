@@ -11,6 +11,7 @@ const analyzeSkillGap = require("./services/analyzeSkillGap")
 const selectClaimsForVerification = require("./services/selectClaimsForVerification")
 const evaluateAnswer = require("./services/evaluateAnswer")
 const { calculateReadinessScore } = require("./services/calculateReadinessScore")
+const generateReadinessReport = require("./services/generateReadinessReport")
 const runAssessment = require("./services/orchestrator")
 const app = express()
 
@@ -167,8 +168,7 @@ console.log(`result : ${result}`)
 })
 
 app.post("/assessment/:id/answer", async (req, res) => {
-
-  console.log()
+  console.log("ANSWER SUBMISSION RECEIVED")
 
   const assessmentId = req.params.id
   const { question, answer } = req.body
@@ -183,7 +183,6 @@ app.post("/assessment/:id/answer", async (req, res) => {
     })
   }
 
-
   const proveItQuestion = assessment.proveItQuestions.find(
     (q) => q.question === question
   )
@@ -194,15 +193,13 @@ app.post("/assessment/:id/answer", async (req, res) => {
     })
   }
 
-  
   const claim = proveItQuestion.relatedClaim
-  
-
 
   const verificationResult = assessment.verificationResults.find(
     (result) => result.claim === claim
   )
 
+  // Evaluate the question + candidate answer
   const evaluation = await evaluateAnswer(
     answer,
     question,
@@ -210,30 +207,68 @@ app.post("/assessment/:id/answer", async (req, res) => {
     verificationResult
   )
 
- 
-  console.log(
-    "QUESTIONS IN ASSESSMENT:",
-    assessment.proveItQuestions
-  )
-
+  // Save answer and evaluation
   proveItQuestion.answer = answer
   proveItQuestion.evaluation = evaluation
-  
-  const readinessScore = calculateReadinessScore(assessment)
-  assessment.readinessScore = readinessScore
-
-
-  console.log("QUESTION BEFORE SAVE:", proveItQuestion)
 
   await assessment.save()
 
+  console.log("ANSWER EVALUATED:", evaluation)
+
   res.json({
     message: "Answer evaluated successfully",
-    evaluation,
-    readinessScore
+    evaluation
   })
 })
 
+app.post("/assessment/:id/finish", async (req, res) => {
+  console.log("FINISH ASSESSMENT RECEIVED")
+
+  try {
+    const assessmentId = req.params.id
+
+    const assessment = await Assessment.findOne({
+      id: assessmentId
+    })
+
+    if (!assessment) {
+      return res.status(404).json({
+        message: "Assessment not found"
+      })
+    }
+
+    const readinessScore = calculateReadinessScore(assessment)
+
+    console.log("FINAL READINESS SCORE:", readinessScore)
+
+    const readinessReport = await generateReadinessReport(
+      assessment,
+      readinessScore
+    )
+
+    assessment.readinessScore = readinessScore
+    assessment.readinessReport = readinessReport
+    assessment.status = "completed"
+
+    await assessment.save()
+
+    console.log("ASSESSMENT COMPLETED")
+
+    res.json({
+      message: "Assessment completed successfully",
+      readinessScore,
+      readinessReport
+    })
+
+  } catch (error) {
+    console.error("FINISH ASSESSMENT ERROR:", error)
+
+    res.status(500).json({
+      message: "Failed to finish assessment",
+      error: error.message
+    })
+  }
+})
 app.get("/assessment/:id", async (req, res) => {
 
   console.log("GET ASSESSMENT ROUTE HIT")

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { ResumeUpload } from "@/components/ui/ResumeUpload"
-
+import Assessment from "./Assessment"
 
 const App = () => {
   const [resume, setResume] = useState(null)
@@ -10,55 +10,64 @@ const App = () => {
   const [assessment, setAssessment] = useState(null)
   const [githubUrl, setGithubUrl] = useState("")
 
-  const handleResumeChange = (file)   => {
-      console.log("FILE RECEIVED:", file)
-      setResume(file)
-    }
+  const handleResumeChange = (file) => {
+    console.log("FILE RECEIVED:", file)
+    setResume(file)
+  }
 
-  const handleSubmit =  async() => {
-      console.log("SUBMIT CLICKED")
+  const handleSubmit = async () => {
+    console.log("SUBMIT CLICKED")
 
-      console.log(resume)
+    console.log(resume)
 
-      const formData = new FormData()
-      formData.append("resume", resume)
-      formData.append("jobDescription", jobDescription)
-      formData.append("githubUrl",githubUrl)
- 
-      console.log(formData)
-      console.log("ABOUT TO FETCH")
-      console.log("RESUME:", resume)
-      console.log("JOB DESCRIPTION:", jobDescription)
-      console.log("githubUrl:", githubUrl)
-     
-        await   fetch("http://127.0.0.1:4000/upload",{
-        method: "POST",
-        body: formData
-      }).then((response) => response.json())
+    const formData = new FormData()
+
+    formData.append("resume", resume)
+    formData.append("jobDescription", jobDescription)
+    formData.append("githubUrl", githubUrl)
+
+    console.log(formData)
+    console.log("ABOUT TO FETCH")
+    console.log("RESUME:", resume)
+    console.log("JOB DESCRIPTION:", jobDescription)
+    console.log("githubUrl:", githubUrl)
+
+    await fetch("http://127.0.0.1:4000/upload", {
+      method: "POST",
+      body: formData
+    })
+      .then((response) => response.json())
       .then((data) => {
         console.log("BACKEND DATA:", data)
         console.log("ASSESSMENT:", data.assessment)
-        console.log("READINESS SCORE:", data.assessment?.readinessScore)
+        console.log(
+          "READINESS SCORE:",
+          data.assessment?.readinessScore
+        )
+
         setMessage(data.message)
         setAssessment(data.assessment)
-      })    
+      })
 
-      console.log("FETCH CALLED")
-      
-    }
+    console.log("FETCH CALLED")
+  }
+
   return (
     <>
       <div>
         <ResumeUpload onResumeChange={handleResumeChange} />
       </div>
+
       <div>
-        <textarea  
-        value={jobDescription} 
-        onChange={(event) => {
-          setJobDescription(event.target.value)
-        }}
-        placeholder="Paste the job description here..."/>
+        <textarea
+          value={jobDescription}
+          onChange={(event) => {
+            setJobDescription(event.target.value)
+          }}
+          placeholder="Paste the job description here..."
+        />
       </div>
+
       <input
         type="text"
         value={githubUrl}
@@ -67,45 +76,18 @@ const App = () => {
         }}
         placeholder="GitHub URL (optional)"
       />
+
       <div>
-        <Button onClick={handleSubmit}>submit</Button>
+        <Button onClick={handleSubmit}>
+          submit
+        </Button>
+
         {assessment && (
-    <div>
-      <h2>Assessment Results</h2>
-
-      <p>Assessment ID: {assessment.id}</p>
-
-<h3>
-  Readiness Score: {
-    assessment.readinessScore
-      ? assessment.readinessScore.overallScore
-      : "Not available"
-  }
-  
-</h3>
-
-{assessment.proveItQuestions &&
-  assessment.proveItQuestions.length > 0 && (
-    <div>
-      <h3>Prove-It Questions</h3>
-
-      {assessment.proveItQuestions.map((question, index) => (
-        <div key={index}>
-          <p>
-            Question {index + 1}: {question.question}
-          </p>
-        </div>
-      ))}
-    </div>
-)}
-    </div>
-)}
-        
+          <Assessment assessment={assessment} />
+        )}
       </div>
-      
-    
     </>
   )
 }
 
-export default App  
+export default App

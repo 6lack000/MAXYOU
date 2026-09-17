@@ -1,26 +1,27 @@
 function calculateProveItScore(proveItQuestions) {
-
-  const answeredQuestions = proveItQuestions.filter(
-  (question) =>
-    question.evaluation &&
-    typeof question.evaluation.score === "number" &&
-    Number.isFinite(question.evaluation.score)
-)
-
-  if (answeredQuestions.length === 0) {
+  if (!proveItQuestions || proveItQuestions.length === 0) {
     return {
       score: 0,
       assessed: false
     }
   }
 
-  const totalScore = answeredQuestions.reduce(
-    (sum, question) => sum + question.evaluation.score,
+  const totalScore = proveItQuestions.reduce(
+    (sum, question) => {
+      const score =
+        question.evaluation &&
+        typeof question.evaluation.score === "number" &&
+        Number.isFinite(question.evaluation.score)
+          ? question.evaluation.score
+          : 0
+
+      return sum + score
+    },
     0
   )
 
   return {
-    score: totalScore / answeredQuestions.length,
+    score: totalScore / proveItQuestions.length,
     assessed: true
   }
 }
@@ -125,6 +126,8 @@ function calculateReadinessScore(assessment) {
   const proveItResult = calculateProveItScore(
     assessment.proveItQuestions
   )
+
+  
 
   const overallScore = calculateOverallReadinessScore(
     jobMatchScore,
